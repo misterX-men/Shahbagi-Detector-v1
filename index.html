@@ -1,223 +1,214 @@
-<!DOCTYPE html><html>
+<!DOCTYPE html>
+<html lang="bn">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1"><title>শাহবাগি Spotted</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/><style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>শাহবাগি ডিটেক্টর</title>
+
+<style>
 
 body{
 margin:0;
 font-family:sans-serif;
-background:#f2f2f2;
+background:linear-gradient(135deg,#ff7a00,#ff3d00);
+text-align:center;
+color:white;
 }
 
 .header{
-background:#0a7c3c;
-color:white;
-padding:12px;
-text-align:center;
-font-size:20px;
-font-weight:bold;
-}
-
-.sub{
-background:#145c2f;
-color:white;
-padding:6px;
-text-align:center;
-font-size:13px;
-}
-
-.stats{
-display:flex;
-gap:10px;
-padding:10px;
-background:#e9f5ec;
-}
-
-.stat{
-background:white;
-padding:6px 10px;
-border-radius:6px;
-font-size:13px;
-}
-
-#map{
-height:50vh;
-}
-
-.list{
-padding:10px;
+padding:30px;
 }
 
 .card{
 background:white;
-padding:12px;
-margin-bottom:10px;
-border-radius:10px;
-box-shadow:0 2px 5px rgba(0,0,0,0.2);
+color:black;
+width:90%;
+max-width:420px;
+margin:auto;
+padding:25px;
+border-radius:15px;
+box-shadow:0 8px 25px rgba(0,0,0,0.2);
 }
 
-.vote{
-border:none;
-padding:6px 10px;
-border-radius:6px;
-margin-right:6px;
-}
-
-.true{
-background:#c8f7c5;
-}
-
-.false{
-background:#ffd1d1;
-}
-
-.locBtn{
-position:fixed;
-bottom:90px;
-right:20px;
-background:#2196f3;
-color:white;
-border:none;
-width:50px;
-height:50px;
-border-radius:50%;
+.question{
 font-size:20px;
+margin-bottom:25px;
 }
 
-.addBtn{
-position:fixed;
-bottom:20px;
-right:20px;
-background:#ff9800;
-color:white;
+button{
+padding:12px 25px;
+margin:6px;
 border:none;
-width:55px;
-height:55px;
-border-radius:50%;
-font-size:25px;
+border-radius:10px;
+font-size:16px;
+cursor:pointer;
 }
 
-</style></head><body><div class="header">📍 শাহবাগি Spotted</div>
-<div class="sub">Made by Anti Misandry Movement</div><div class="stats">
-<div class="stat">মোট স্পট: <span id="total">0</span></div>
-<div class="stat">আছে: <span id="yesCount">0</span></div>
-<div class="stat">নাই: <span id="noCount">0</span></div>
-</div><div id="map"></div><div class="list" id="spotList"></div><button class="locBtn" onclick="locate()">📍</button>
-<button class="addBtn" onclick="alert('নতুন স্পট যোগ ডেমো')">+</button>
+.yes{
+background:#ff5722;
+color:white;
+}
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script><script>
+.no{
+background:#444;
+color:white;
+}
 
-var map = L.map('map').setView([23.8103,90.4125],11);
+.result{
+background:#111;
+color:white;
+padding:20px;
+border-radius:12px;
+margin-top:20px;
+display:none;
+}
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
- attribution:'© OpenStreetMap'
-}).addTo(map);
+.share{
+background:#ff5722;
+color:white;
+margin-top:10px;
+}
 
-var cluster = L.markerClusterGroup();
+.loading{
+display:none;
+margin:20px;
+font-size:18px;
+}
 
-var spots = [
+.footer{
+margin-top:25px;
+font-size:14px;
+}
 
-{name:"ঢাকা বিশ্ববিদ্যালয়",lat:23.7296,lng:90.3958,status:"yes",yes:5,no:1},
-{name:"শাহবাগ মোড়",lat:23.7383,lng:90.3942,status:"yes",yes:3,no:2},
-{name:"ধানমন্ডি",lat:23.7461,lng:90.3742,status:"no",yes:1,no:4},
-{name:"মিরপুর",lat:23.8223,lng:90.3654,status:"no",yes:2,no:3}
+</style>
+</head>
 
-];
+<body>
 
+<div class="header">
+<h1>🕵️ শাহবাগি ডিটেক্টর</h1>
+<p>মজার কুইজ — আপনি কত লেভেলের শাহবাগি?</p>
+</div>
 
-function render(){
-
-cluster.clearLayers();
-
-var html="";
-
-var yesTotal=0;
-var noTotal=0;
-
-spots.forEach(function(s,i){
-
-if(s.status==="yes") yesTotal++;
-if(s.status==="no") noTotal++;
-
-var iconColor = s.status==="yes" ? "green" : "red";
-
-var icon = L.divIcon({
-html:"<div style='background:"+iconColor+";width:18px;height:18px;border-radius:50%'></div>"
-});
-
-var marker = L.marker([s.lat,s.lng],{icon:icon});
-
-marker.bindPopup(s.name);
-
-cluster.addLayer(marker);
-
-var text = s.status==="yes" ? "শাহবাগি আছে" : "শাহবাগি নাই";
-
-html+=`
 <div class="card">
-<b>${s.name}</b><br>
-স্ট্যাটাস: ${text}<br>
 
-<button class="vote true" onclick="voteYes(${i})">👍 আছে ${s.yes}</button>
-<button class="vote false" onclick="voteNo(${i})">👎 নাই ${s.no}</button>
+<div id="quiz">
+
+<div class="question" id="question"></div>
+
+<button class="yes" onclick="answer(1)">হ্যাঁ</button>
+<button class="no" onclick="answer(0)">না</button>
 
 </div>
-`;
 
-});
+<div class="loading" id="loading">
+⏳ স্ক্যান করা হচ্ছে...
+</div>
 
-map.addLayer(cluster);
+<div class="result" id="result">
+<h2 id="percent"></h2>
 
-document.getElementById("spotList").innerHTML = html;
+<button class="share" onclick="share()">
+Facebook এ শেয়ার করুন
+</button>
 
-document.getElementById("total").innerText = spots.length;
-document.getElementById("yesCount").innerText = yesTotal;
-document.getElementById("noCount").innerText = noTotal;
+</div>
+
+</div>
+
+<div class="footer">
+made by anti misandry movement group
+</div>
+
+<script>
+
+var questions = [
+"আপনার গায়ে গন্ধ হয়?",
+"আপনার বগলের চুল বড়?",
+"আপনি হাতা কাটা জামা পরেন?",
+"আপনার ওড়না থাকলেও গলায় ঝুলানো থাকে?",
+"আপনার কপালে লাল টিপ আছে?",
+"আপনার কাছে কি রাবারের খেলনা আছে?",
+"বেগুন/শসা পছন্দ করেন?",
+"আপনি কি আম্রিকা/হিজ্রাইল/রেন্ডিয়ার উনুক্কু চুষেন?"
+];
+
+var index = 0;
+var score = 0;
+
+function loadQuestion(){
+document.getElementById("question").innerText = questions[index];
+}
+
+function answer(v){
+
+score += v;
+index++;
+
+if(index < questions.length){
+
+loadQuestion();
+
+}else{
+
+finishQuiz();
 
 }
 
+}
 
-function voteYes(i){
+function finishQuiz(){
 
-spots[i].yes++;
-spots[i].status="yes";
-render();
+document.getElementById("quiz").style.display="none";
+document.getElementById("loading").style.display="block";
+
+setTimeout(showResult,2000);
 
 }
 
+function showResult(){
 
-function voteNo(i){
+document.getElementById("loading").style.display="none";
 
-spots[i].no++;
-spots[i].status="no";
-render();
+var percent = Math.round((score/questions.length)*100);
+
+var text="";
+
+if(percent < 30){
+
+text="😇 আপনি নির্দোষ শাহবাগি";
+
+}
+else if(percent < 70){
+
+text="😏 আপনি মাঝারি শাহবাগি";
+
+}
+else{
+
+text="😆 আপনি ফুল শাহবাগি";
 
 }
 
+document.getElementById("percent").innerText = text;
 
-function locate(){
-
-if(navigator.geolocation){
-
-navigator.geolocation.getCurrentPosition(function(pos){
-
-var lat = pos.coords.latitude;
-var lng = pos.coords.longitude;
-
-L.marker([lat,lng]).addTo(map).bindPopup("আপনার লোকেশন");
-
-map.setView([lat,lng],14);
-
-});
+document.getElementById("result").style.display="block";
 
 }
 
+function share(){
+
+var text=document.getElementById("percent").innerText;
+
+var url="https://www.facebook.com/sharer/sharer.php?quote="+text;
+
+window.open(url);
+
 }
 
+loadQuestion();
 
-render();
+</script>
 
-</script></body>
+</body>
 </html>
