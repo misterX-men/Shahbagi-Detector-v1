@@ -1,0 +1,223 @@
+<!DOCTYPE html><html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>শাহবাগি Spotted</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/><style>
+
+body{
+margin:0;
+font-family:sans-serif;
+background:#f2f2f2;
+}
+
+.header{
+background:#0a7c3c;
+color:white;
+padding:12px;
+text-align:center;
+font-size:20px;
+font-weight:bold;
+}
+
+.sub{
+background:#145c2f;
+color:white;
+padding:6px;
+text-align:center;
+font-size:13px;
+}
+
+.stats{
+display:flex;
+gap:10px;
+padding:10px;
+background:#e9f5ec;
+}
+
+.stat{
+background:white;
+padding:6px 10px;
+border-radius:6px;
+font-size:13px;
+}
+
+#map{
+height:50vh;
+}
+
+.list{
+padding:10px;
+}
+
+.card{
+background:white;
+padding:12px;
+margin-bottom:10px;
+border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,0.2);
+}
+
+.vote{
+border:none;
+padding:6px 10px;
+border-radius:6px;
+margin-right:6px;
+}
+
+.true{
+background:#c8f7c5;
+}
+
+.false{
+background:#ffd1d1;
+}
+
+.locBtn{
+position:fixed;
+bottom:90px;
+right:20px;
+background:#2196f3;
+color:white;
+border:none;
+width:50px;
+height:50px;
+border-radius:50%;
+font-size:20px;
+}
+
+.addBtn{
+position:fixed;
+bottom:20px;
+right:20px;
+background:#ff9800;
+color:white;
+border:none;
+width:55px;
+height:55px;
+border-radius:50%;
+font-size:25px;
+}
+
+</style></head><body><div class="header">📍 শাহবাগি Spotted</div>
+<div class="sub">Made by Anti Misandry Movement</div><div class="stats">
+<div class="stat">মোট স্পট: <span id="total">0</span></div>
+<div class="stat">আছে: <span id="yesCount">0</span></div>
+<div class="stat">নাই: <span id="noCount">0</span></div>
+</div><div id="map"></div><div class="list" id="spotList"></div><button class="locBtn" onclick="locate()">📍</button>
+<button class="addBtn" onclick="alert('নতুন স্পট যোগ ডেমো')">+</button>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script><script>
+
+var map = L.map('map').setView([23.8103,90.4125],11);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+ attribution:'© OpenStreetMap'
+}).addTo(map);
+
+var cluster = L.markerClusterGroup();
+
+var spots = [
+
+{name:"ঢাকা বিশ্ববিদ্যালয়",lat:23.7296,lng:90.3958,status:"yes",yes:5,no:1},
+{name:"শাহবাগ মোড়",lat:23.7383,lng:90.3942,status:"yes",yes:3,no:2},
+{name:"ধানমন্ডি",lat:23.7461,lng:90.3742,status:"no",yes:1,no:4},
+{name:"মিরপুর",lat:23.8223,lng:90.3654,status:"no",yes:2,no:3}
+
+];
+
+
+function render(){
+
+cluster.clearLayers();
+
+var html="";
+
+var yesTotal=0;
+var noTotal=0;
+
+spots.forEach(function(s,i){
+
+if(s.status==="yes") yesTotal++;
+if(s.status==="no") noTotal++;
+
+var iconColor = s.status==="yes" ? "green" : "red";
+
+var icon = L.divIcon({
+html:"<div style='background:"+iconColor+";width:18px;height:18px;border-radius:50%'></div>"
+});
+
+var marker = L.marker([s.lat,s.lng],{icon:icon});
+
+marker.bindPopup(s.name);
+
+cluster.addLayer(marker);
+
+var text = s.status==="yes" ? "শাহবাগি আছে" : "শাহবাগি নাই";
+
+html+=`
+<div class="card">
+<b>${s.name}</b><br>
+স্ট্যাটাস: ${text}<br>
+
+<button class="vote true" onclick="voteYes(${i})">👍 আছে ${s.yes}</button>
+<button class="vote false" onclick="voteNo(${i})">👎 নাই ${s.no}</button>
+
+</div>
+`;
+
+});
+
+map.addLayer(cluster);
+
+document.getElementById("spotList").innerHTML = html;
+
+document.getElementById("total").innerText = spots.length;
+document.getElementById("yesCount").innerText = yesTotal;
+document.getElementById("noCount").innerText = noTotal;
+
+}
+
+
+function voteYes(i){
+
+spots[i].yes++;
+spots[i].status="yes";
+render();
+
+}
+
+
+function voteNo(i){
+
+spots[i].no++;
+spots[i].status="no";
+render();
+
+}
+
+
+function locate(){
+
+if(navigator.geolocation){
+
+navigator.geolocation.getCurrentPosition(function(pos){
+
+var lat = pos.coords.latitude;
+var lng = pos.coords.longitude;
+
+L.marker([lat,lng]).addTo(map).bindPopup("আপনার লোকেশন");
+
+map.setView([lat,lng],14);
+
+});
+
+}
+
+}
+
+
+render();
+
+</script></body>
+</html>
